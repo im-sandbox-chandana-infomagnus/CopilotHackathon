@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Common Room | Live chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink: #1f2933; --muted: #70808b; --line: #e5e9e5; --paper: #f7f8f3; --white: #fff; --green: #77a96d; --green-dark: #456d4d; --yellow: #f3c969; --coral: #ee8e78; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "DM Sans", sans-serif; }
+    button, input { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    .shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at 9% 15%, #e9f1dc 0 18%, transparent 38%), radial-gradient(circle at 92% 92%, #f7e4c4 0 14%, transparent 36%), var(--paper); }
+    .app { width: min(1180px, 100%); min-height: min(760px, calc(100vh - 48px)); display: grid; grid-template-columns: 280px 1fr; overflow: hidden; border: 1px solid #e0e6df; border-radius: 22px; background: var(--white); box-shadow: 0 24px 70px #5562521c; }
+    .sidebar { padding: 28px 20px; background: #eff4eb; border-right: 1px solid #e0e8de; }
+    .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 54px; color: var(--green-dark); font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.2rem; }
+    .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: var(--green); color: white; }
+    .eyebrow { margin: 0 0 10px; color: var(--muted); font-size: .7rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .room-name { margin: 0 0 30px; font-family: "Space Grotesk", sans-serif; font-size: 1.7rem; letter-spacing: -.04em; }
+    .people-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: var(--muted); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+    .online-count { padding: 3px 8px; border-radius: 20px; background: #dbead5; color: var(--green-dark); font-size: .7rem; }
+    .people { display: grid; gap: 12px; }
+    .person { display: flex; align-items: center; gap: 10px; font-size: .9rem; }
+    .avatar { position: relative; display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; overflow: hidden; border-radius: 50%; background: var(--yellow); color: #745921; font-size: .72rem; font-weight: 700; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar::after { content: ""; position: absolute; right: 0; bottom: 1px; width: 8px; height: 8px; border: 2px solid #eff4eb; border-radius: 50%; background: #64ac6c; }
+    .main { display: flex; min-width: 0; flex-direction: column; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 27px 34px 23px; border-bottom: 1px solid var(--line); }
+    .topbar h1 { margin: 0; font-family: "Space Grotesk", sans-serif; font-size: 1.35rem; letter-spacing: -.03em; }
+    .connection { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .8rem; }
+    .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
+    .connection.connected .connection-dot { background: #65af6d; }
+    .messages { flex: 1; overflow: auto; padding: 28px 34px; }
+    .message-row { display: flex; gap: 12px; max-width: 760px; margin-bottom: 23px; animation: rise .25s ease-out; }
+    .message-content { min-width: 0; }
+    .message-meta { display: flex; align-items: baseline; gap: 9px; margin: 2px 0 6px; }
+    .sender { font-size: .86rem; font-weight: 700; }
+    .time { color: #a0aaa7; font-size: .72rem; }
+    .bubble { display: inline-block; max-width: min(600px, 100%); padding: 11px 14px; border-radius: 4px 16px 16px 16px; background: #f1f4ef; color: #354148; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .message-row.mine { margin-left: auto; flex-direction: row-reverse; }
+    .mine .message-content { text-align: right; }
+    .mine .message-meta { justify-content: flex-end; }
+    .mine .bubble { border-radius: 16px 4px 16px 16px; background: var(--green); color: white; text-align: left; }
+    .image-message { display: block; max-width: min(340px, 100%); overflow: hidden; border-radius: 4px 16px 16px 16px; background: #f1f4ef; }
+    .image-message img { display: block; width: 100%; max-height: 260px; object-fit: cover; }
+    .image-caption { padding: 9px 12px; font-size: .82rem; }
+    .system { margin: 18px auto 24px; color: #9ba6a0; font-size: .75rem; text-align: center; }
+    .composer-wrap { padding: 16px 34px 24px; border-top: 1px solid var(--line); }
+    .composer { display: flex; align-items: flex-end; gap: 10px; padding: 8px 8px 8px 16px; border: 1px solid #dce3dc; border-radius: 16px; background: #fbfcfa; }
+    .composer textarea { width: 100%; min-height: 42px; max-height: 130px; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink); line-height: 1.5; }
+    .icon-button { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; background: transparent; color: var(--muted); font-size: 1.1rem; }
+    .icon-button:hover { background: #eaf0e8; color: var(--green-dark); }
+    .send { background: var(--green); color: white; }
+    .send:hover { background: var(--green-dark); color: white; }
+    .hint { margin: 9px 4px 0; color: #a0aaa7; font-size: .72rem; }
+    .login { width: min(430px, 100%); padding: 42px; border: 1px solid #e0e6df; border-radius: 22px; background: white; box-shadow: 0 24px 70px #5562521c; }
+    .login .brand { margin-bottom: 42px; }
+    .login h1 { margin: 0 0 10px; font-family: "Space Grotesk", sans-serif; font-size: 2.2rem; letter-spacing: -.06em; }
+    .login p { margin: 0 0 28px; color: var(--muted); line-height: 1.5; }
+    .login label { display: block; margin-bottom: 8px; font-size: .8rem; font-weight: 700; }
+    .login input { width: 100%; padding: 13px 14px; border: 1px solid #dce3dc; border-radius: 10px; outline-color: var(--green); }
+    .primary { width: 100%; margin-top: 18px; padding: 13px; border-radius: 10px; background: var(--green); color: white; font-weight: 700; }
+    .primary:hover { background: var(--green-dark); }
+    .modal { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: #24312888; }
+    .modal[hidden], .login[hidden], .app[hidden] { display: none; }
+    .modal-card { width: min(430px, 100%); padding: 25px; border-radius: 16px; background: white; }
+    .modal-card h2 { margin: 0 0 18px; font-family: "Space Grotesk", sans-serif; }
+    .modal-card input { width: 100%; padding: 12px; border: 1px solid #dce3dc; border-radius: 9px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .modal-actions button { padding: 10px 14px; border-radius: 8px; }
+    .cancel { background: #eef1ed; color: var(--ink); }
+    @keyframes rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 700px) { .shell { padding: 0; } .app { min-height: 100vh; border: 0; border-radius: 0; grid-template-columns: 1fr; } .sidebar { display: none; } .topbar, .messages, .composer-wrap { padding-left: 18px; padding-right: 18px; } .topbar { padding-top: 20px; padding-bottom: 18px; } .connection { font-size: 0; } .login { border: 0; border-radius: 0; box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="login" id="loginView">
+      <div class="brand"><span class="brand-mark">✦</span> Common Room</div>
+      <h1>Make some room<br>for conversation.</h1>
+      <p>A quiet corner for quick thoughts, shared links, and the people online right now.</p>
+      <form id="loginForm">
+        <label for="nameInput">Your name</label>
+        <input id="nameInput" name="name" maxlength="32" autocomplete="nickname" placeholder="e.g. Alex Morgan" required>
+        <button class="primary" type="submit">Enter the room</button>
+      </form>
+    </section>
+
+    <main class="app" id="chatView" hidden>
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">✦</span> Common Room</div>
+        <p class="eyebrow">Current room</p>
+        <h2 class="room-name">The<br>lounge</h2>
+        <div class="people-heading"><span>People here</span><span class="online-count" id="onlineCount">0</span></div>
+        <div class="people" id="peopleList"></div>
+      </aside>
+      <section class="main">
+        <header class="topbar"><h1>The lounge</h1><div class="connection" id="connection"><span class="connection-dot"></span><span id="connectionText">Connecting</span></div></header>
+        <div class="messages" id="messages" aria-live="polite"></div>
+        <div class="composer-wrap">
+          <form class="composer" id="messageForm">
+            <textarea id="messageInput" rows="1" maxlength="2000" placeholder="Write a message..." aria-label="Message"></textarea>
+            <button class="icon-button" id="imageButton" type="button" title="Share an image" aria-label="Share an image">▧</button>
+            <button class="icon-button send" type="submit" title="Send message" aria-label="Send message">➜</button>
+          </form>
+          <p class="hint">Press Enter to send · Shift + Enter for a new line</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="imageModal" hidden>
+    <form class="modal-card" id="imageForm">
+      <h2>Share an image</h2>
+      <label for="imageUrl">Image URL</label>
+      <input id="imageUrl" type="url" placeholder="https://..." required>
+      <label for="imageCaption" style="display:block;margin-top:13px;margin-bottom:8px;font-size:.8rem;font-weight:700">Caption <span style="font-weight:400;color:#9ba6a0">(optional)</span></label>
+      <input id="imageCaption" maxlength="240" placeholder="A little context...">
+      <div class="modal-actions"><button class="cancel" id="cancelImage" type="button">Cancel</button><button class="primary" style="width:auto;margin:0" type="submit">Share image</button></div>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const loginView = document.querySelector('#loginView');
+    const chatView = document.querySelector('#chatView');
+    const loginForm = document.querySelector('#loginForm');
+    const nameInput = document.querySelector('#nameInput');
+    const messageForm = document.querySelector('#messageForm');
+    const messageInput = document.querySelector('#messageInput');
+    const messages = document.querySelector('#messages');
+    const peopleList = document.querySelector('#peopleList');
+    const onlineCount = document.querySelector('#onlineCount');
+    const connection = document.querySelector('#connection');
+    const connectionText = document.querySelector('#connectionText');
+    const imageModal = document.querySelector('#imageModal');
+    const imageForm = document.querySelector('#imageForm');
+    const imageUrl = document.querySelector('#imageUrl');
+    const imageCaption = document.querySelector('#imageCaption');
+    let socket;
+    let currentUser;
+
+    function initials(name) { return name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(); }
+    function formatTime(timestamp) { return new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date(timestamp)); }
+    function avatar(user) { const node = document.createElement('div'); node.className = 'avatar'; node.textContent = initials(user.name); if (user.avatar) { const image = document.createElement('img'); image.src = user.avatar; image.alt = ''; image.onload = () => { node.textContent = ''; node.append(image); }; } return node; }
+
+    function renderPeople(users) {
+      peopleList.replaceChildren();
+      onlineCount.textContent = users.length;
+      users.forEach((user) => { const person = document.createElement('div'); person.className = 'person'; person.append(avatar(user), document.createTextNode(user.name)); peopleList.append(person); });
+    }
+
+    function addSystemMessage(message) { const node = document.createElement('div'); node.className = 'system'; node.textContent = `${message.text} · ${formatTime(message.timestamp)}`; messages.append(node); messages.scrollTop = messages.scrollHeight; }
+
+    function addMessage(message) {
+      const mine = message.sender.id === socket.id;
+      const row = document.createElement('article'); row.className = `message-row${mine ? ' mine' : ''}`;
+      row.append(avatar(message.sender));
+      const content = document.createElement('div'); content.className = 'message-content';
+      const meta = document.createElement('div'); meta.className = 'message-meta';
+      const sender = document.createElement('span'); sender.className = 'sender'; sender.textContent = mine ? 'You' : message.sender.name;
+      const time = document.createElement('time'); time.className = 'time'; time.textContent = formatTime(message.timestamp); meta.append(sender, time); content.append(meta);
+      if (message.type === 'image') { const imageBubble = document.createElement('div'); imageBubble.className = 'image-message'; const image = document.createElement('img'); image.src = message.url; image.alt = message.caption || 'Shared image'; image.loading = 'lazy'; imageBubble.append(image); if (message.caption) { const caption = document.createElement('div'); caption.className = 'image-caption'; caption.textContent = message.caption; imageBubble.append(caption); } content.append(imageBubble); } else { const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = message.text; content.append(bubble); }
+      row.append(content); messages.append(row); messages.scrollTop = messages.scrollHeight;
+    }
+
+    function connect(user) {
+      currentUser = user; localStorage.setItem('common-room-user', JSON.stringify(user)); loginView.hidden = true; chatView.hidden = false;
+      socket = io();
+      socket.on('connect', () => { connection.classList.add('connected'); connectionText.textContent = 'Live now'; socket.emit('join', currentUser); });
+      socket.on('disconnect', () => { connection.classList.remove('connected'); connectionText.textContent = 'Reconnecting'; });
+      socket.on('history', (items) => items.forEach(addMessage));
+      socket.on('presence', renderPeople);
+      socket.on('chat-message', addMessage);
+      socket.on('system-message', addSystemMessage);
+    }
+
+    loginForm.addEventListener('submit', (event) => { event.preventDefault(); connect({ name: nameInput.value.trim() }); });
+    messageForm.addEventListener('submit', (event) => { event.preventDefault(); const text = messageInput.value.trim(); if (!text || !socket?.connected) return; socket.emit('chat-message', { text }); messageInput.value = ''; messageInput.style.height = 'auto'; });
+    messageInput.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); messageForm.requestSubmit(); } });
+    messageInput.addEventListener('input', () => { messageInput.style.height = 'auto'; messageInput.style.height = `${Math.min(messageInput.scrollHeight, 130)}px`; });
+    document.querySelector('#imageButton').addEventListener('click', () => { imageModal.hidden = false; imageUrl.focus(); });
+    document.querySelector('#cancelImage').addEventListener('click', () => { imageModal.hidden = true; imageForm.reset(); });
+    imageForm.addEventListener('submit', (event) => { event.preventDefault(); if (socket?.connected) socket.emit('image-message', { url: imageUrl.value.trim(), caption: imageCaption.value.trim() }); imageModal.hidden = true; imageForm.reset(); });
+
+    try { const saved = JSON.parse(localStorage.getItem('common-room-user')); if (saved?.name) connect(saved); else nameInput.focus(); } catch { nameInput.focus(); }
+  </script>
+</body>
+</html>

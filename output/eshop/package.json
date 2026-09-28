@@ -1,0 +1,13 @@
+{
+  "name": "automotive-parts-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Automotive parts shop cart challenge solution",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
